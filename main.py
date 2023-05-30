@@ -1,12 +1,11 @@
 import ctypes
 import pyglet
+import pyglet.gl as gl
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
 
-import pyglet.gl as gl
-
-vertes_positions = [
+vertex_positions = [
     -0.5, 0.5, 1.0,
     -0.5,-0.5, 1.0,
      0.5,-0.5, 1.0,
@@ -23,7 +22,7 @@ class Window(pyglet.window.Window):
         super(Window,self).__init__(**args)
         #vertex array
         self.vao = gl.GLuint(0)
-        gl.glGenVertexArray(1,ctypes.byref(self.vao))
+        gl.glGenVertexArrays(1,ctypes.byref(self.vao))
         gl.glBindVertexArray(self.vao)
         #vertex buffer
         self.vao = gl.GLuint(0)
@@ -31,7 +30,7 @@ class Window(pyglet.window.Window):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vbo)
 
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        ctypes.sizeof(gl.GLfloat * len(vertex_position)),
+                        ctypes.sizeof(gl.GLfloat * len(vertex_positions)),
                         (gl.GLfloat * len(vertex_positions)) (*vertex_positions),
                         gl.GL_STATIC_DRAW)
         
