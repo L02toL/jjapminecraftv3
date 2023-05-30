@@ -1,15 +1,20 @@
+#dictionaries
+import math
 import ctypes
 import pyglet
 import pyglet.gl as gl
+#files
+import shader
+import matrix
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
 
 vertex_positions = [
-    -0.5, 0.5, 1.0,
-    -0.5,-0.5, 1.0,
-     0.5,-0.5, 1.0,
-     0.5, 0.5, 1.0,
+    -0.5, 0.5, 0.0,
+    -0.5,-0.5, 0.0,
+     0.5,-0.5, 0.0,
+     0.5, 0.5, 0.0,
 ]
 
 indices = [
@@ -45,9 +50,33 @@ class Window(pyglet.window.Window):
                         ctypes.sizeof(gl.GLuint * len(indices)),
                         (gl.GLuint * len(indices)) (*indices),
                         gl.GL_STATIC_DRAW)
+        #shader
+        self.shader = shader.Shader("vert.glsl","frag.glsl")
+        self.shader_matrix_location = self.shader.find_uniform(b"matrix")
+        self.shader.use()
+        #matrices
+        self.mv_matrix = matrix.Matrix()
+        self.p_matrix = matrix.Matrix()
+        
+        self.x = 0
+        pyglet.clock.schedule_interval(self.update,1.0/60)
+        
+    def update(self,delta_time):
+        self.x += delta_time
 
     def on_draw(self):
-        gl.glClearColor(1.0,0.5,1.0,1.0)
+        #create projection matrix
+        self.p_matrix.load_identity()
+        self.p_matrix.perspective(90,float(self.width)/self.height,0.1,500)
+        #create modelview matrix
+        self.mv_matrix.load_identity()
+        self.mv_matrix.translate(0,0,-1)
+        self.mv_matrix.rotate_2d(self.x + 6.28 / 4, math.sin(self.x / 3 * 2) / 2)
+        #modelviewprojectionmatrix
+        mvp_matrix = self.p_matrix * self.mv_matrix
+        self.shader.uniform_matrix(self.shader_matrix_location,mvp_matrix)
+        #draw
+        gl.glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
 
         gl.glDrawElements(
