@@ -19,13 +19,13 @@ indices = [
 
 class Window(pyglet.window.Window):
     def __init__(self, **args):
-        super(Window,self).__init__(**args)
+        super().__init__(**args)
         #vertex array
         self.vao = gl.GLuint(0)
         gl.glGenVertexArrays(1,ctypes.byref(self.vao))
         gl.glBindVertexArray(self.vao)
         #vertex buffer
-        self.vao = gl.GLuint(0)
+        self.vbo = gl.GLuint(0)
         gl.glGenBuffers(1,ctypes.byref(self.vbo))
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vbo)
 
@@ -37,7 +37,7 @@ class Window(pyglet.window.Window):
         gl.glVertexAttribPointer(0,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
         gl.glEnableVertexAttribArray(0)
         #indexbufferobject
-        self.ibo = glGLuint(0)
+        self.ibo = gl.GLuint(0)
         gl.glGenBuffers(1,self.ibo)
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER,self.ibo)
 
@@ -63,8 +63,8 @@ class Window(pyglet.window.Window):
 
 class Game:
     def __init__(self):
-        self.config = gl.Config(major_version = 3)
-        self.window = Window(config = self.config,width = 800, height = 600,caption = "jjapmincraft",resizeable=True,vsync=False)
+        self.config = gl.Config(double_buffer = True, major_version = 3, minor_version = 3)
+        self.window = Window(config = self.config, width = 800, height = 600, caption = "jjapmincraft", resizable = True, vsync = False)
     def run(self):
         pyglet.app.run()
 if __name__ == "__main__":
