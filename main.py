@@ -6,25 +6,24 @@ import pyglet.gl as gl
 #files
 import shader
 import matrix
+import block_type
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
 
-vertex_positions = [
-    -0.5, 0.5, 0.0,
-    -0.5,-0.5, 0.0,
-     0.5,-0.5, 0.0,
-     0.5, 0.5, 0.0,
-]
-
-indices = [
-    0,1,2, #1
-    0,2,3, #2
-]
-
 class Window(pyglet.window.Window):
     def __init__(self, **args):
         super().__init__(**args)
+        #blocks
+        
+        self.cobblestone = block_type.Block_type("cobblestone",{"all":"cobblestone"})
+        self.grass = block_type.Block_type("grass",{"top":"grass","bottom":"dirt","sides":"grass_side"})
+        self.dirt = block_type.Block_type("dirt",{"all":"dirt"})
+        self.stone = block_type.Block_type("stone",{"all":"stone"})
+        self.sand = block_type.Block_type("sand",{"all":"sand"})
+        self.planks = block_type.Block_type("planks",{"all":"planks"})
+        self.log = block_type.Block_type("log",{"top":"log_top","bottom":"log_top","side":"log_side"})
+
         #vertex array
         self.vao = gl.GLuint(0)
         gl.glGenVertexArrays(1,ctypes.byref(self.vao))
@@ -35,8 +34,8 @@ class Window(pyglet.window.Window):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vbo)
 
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        ctypes.sizeof(gl.GLfloat * len(vertex_positions)),
-                        (gl.GLfloat * len(vertex_positions)) (*vertex_positions),
+                        ctypes.sizeof(gl.GLfloat * len(self.grass.vertex_position)),
+                        (gl.GLfloat * len(self.grass.vertex_position)) (*self.grass.vertex_position),
                         gl.GL_STATIC_DRAW)
         
         gl.glVertexAttribPointer(0,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
@@ -47,8 +46,8 @@ class Window(pyglet.window.Window):
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER,self.ibo)
 
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER,
-                        ctypes.sizeof(gl.GLuint * len(indices)),
-                        (gl.GLuint * len(indices)) (*indices),
+                        ctypes.sizeof(gl.GLuint * len(self.grass.indices)),
+                        (gl.GLuint * len(self.grass.indices)) (*self.grass.indices),
                         gl.GL_STATIC_DRAW)
         #shader
         self.shader = shader.Shader("vert.glsl","frag.glsl")
@@ -70,18 +69,19 @@ class Window(pyglet.window.Window):
         self.p_matrix.perspective(90,float(self.width)/self.height,0.1,500)
         #create modelview matrix
         self.mv_matrix.load_identity()
-        self.mv_matrix.translate(0,0,-1)
-        self.mv_matrix.rotate_2d(self.x + 6.28 / 4, math.sin(self.x / 3 * 2) / 2)
+        self.mv_matrix.translate(0,0,-3)
+        self.mv_matrix.rotate_2d(self.x, math.sin(self.x / 3 * 2) / 2)
         #modelviewprojectionmatrix
         mvp_matrix = self.p_matrix * self.mv_matrix
         self.shader.uniform_matrix(self.shader_matrix_location,mvp_matrix)
         #draw
+        gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
 
         gl.glDrawElements(
             gl.GL_TRIANGLES,
-            len(indices),
+            len(self.grass.indices),
             gl.GL_UNSIGNED_INT,
             None
         )
@@ -92,7 +92,7 @@ class Window(pyglet.window.Window):
 
 class Game:
     def __init__(self):
-        self.config = gl.Config(double_buffer = True, major_version = 3, minor_version = 3)
+        self.config = gl.Config(double_buffer = True, major_version = 3, minor_version = 3, depth_size = 16)
         self.window = Window(config = self.config, width = 800, height = 600, caption = "jjapmincraft", resizable = True, vsync = False)
     def run(self):
         pyglet.app.run()
