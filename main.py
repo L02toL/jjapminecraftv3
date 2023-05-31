@@ -7,6 +7,7 @@ import pyglet.gl as gl
 import shader
 import matrix
 import block_type
+import texture_manager
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
@@ -16,14 +17,18 @@ class Window(pyglet.window.Window):
         super().__init__(**args)
         #blocks
         
-        self.cobblestone = block_type.Block_type("cobblestone",{"all":"cobblestone"})
-        self.grass = block_type.Block_type("grass",{"top":"grass","bottom":"dirt","sides":"grass_side"})
-        self.dirt = block_type.Block_type("dirt",{"all":"dirt"})
-        self.stone = block_type.Block_type("stone",{"all":"stone"})
-        self.sand = block_type.Block_type("sand",{"all":"sand"})
-        self.planks = block_type.Block_type("planks",{"all":"planks"})
-        self.log = block_type.Block_type("log",{"top":"log_top","bottom":"log_top","side":"log_side"})
+        self.texture_manager = texture_manager.Texture_manager(16,16,256)
+        
+        self.cobblestone = block_type.Block_type(self.texture_manager,"cobblestone",{"all":"cobblestone"})
+        self.grass = block_type.Block_type(self.texture_manager,"grass",{"top":"grass","bottom":"dirt","sides":"grass_side"})
+        self.dirt = block_type.Block_type(self.texture_manager,"dirt",{"all":"dirt"})
+        self.stone = block_type.Block_type(self.texture_manager,"stone",{"all":"stone"})
+        self.sand = block_type.Block_type(self.texture_manager,"sand",{"all":"sand"})
+        self.planks = block_type.Block_type(self.texture_manager,"planks",{"all":"planks"})
+        self.log = block_type.Block_type(self.texture_manager,"log",{"top":"log_top","bottom":"log_top","side":"log_side"})
 
+        self.texture_manager.generate_mipmaps()
+        
         #vertex array
         self.vao = gl.GLuint(0)
         gl.glGenVertexArrays(1,ctypes.byref(self.vao))
@@ -52,6 +57,7 @@ class Window(pyglet.window.Window):
         #shader
         self.shader = shader.Shader("vert.glsl","frag.glsl")
         self.shader_matrix_location = self.shader.find_uniform(b"matrix")
+        self.shader_sampler_location = self.shader.find_uniform(b"texture_array_sampler")
         self.shader.use()
         #matrices
         self.mv_matrix = matrix.Matrix()
@@ -74,6 +80,10 @@ class Window(pyglet.window.Window):
         #modelviewprojectionmatrix
         mvp_matrix = self.p_matrix * self.mv_matrix
         self.shader.uniform_matrix(self.shader_matrix_location,mvp_matrix)
+        #bind textures
+        gl.glActiveTexture(gl.GL_TEXTURE0)
+        gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY,self.texture_manager.texture_array)
+        gl.glUniform1i(self.shader_sampler_location,0)
         #draw
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glClearColor(0.0, 0.0, 0.0, 1.0)
