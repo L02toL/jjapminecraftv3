@@ -4,6 +4,7 @@ import pyglet.gl as gl
 class Shader_error(Exception):
     def __init__(self, message):
         self.message = message
+        
 def create_shader(target,source_path):
     #read shader source
     source_file = open(source_path,"rb")
@@ -27,7 +28,7 @@ def create_shader(target,source_path):
     log_buffer = ctypes.create_string_buffer(log_length.value)
     gl.glGetShaderInfoLog(target,log_length,None,log_buffer)
     
-    if log_length:
+    if log_length.value > 1:
         raise Shader_error(str(log_buffer.value))
 
 class Shader:

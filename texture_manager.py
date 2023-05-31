@@ -15,6 +15,7 @@ class Texture_manager:
         self.texture_array = gl.GLuint(0)
         gl.glGenTextures(1,self.texture_array)
         gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY,self.texture_array)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D_ARRAY, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
         
         gl.glTexImage3D(
             gl.GL_TEXTURE_2D_ARRAY,0,gl.GL_RGBA,
@@ -23,6 +24,7 @@ class Texture_manager:
         )
     
     def generate_mipmaps(self):
+        gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_array)
         gl.glGenerateMipmap(gl.GL_TEXTURE_2D_ARRAY)
         
     def add_texture(self,texture):
@@ -37,5 +39,5 @@ class Texture_manager:
                 0,0,self.textures.index(texture),
                 self.texture_width,self.texture_height,1,
                 gl.GL_RGBA,gl.GL_UNSIGNED_BYTE,
-                texture.image.get_data("RGBA",texture_image.width * 4)
+                texture_image.get_data("RGBA",texture_image.width * 4)
             )

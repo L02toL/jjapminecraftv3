@@ -2,6 +2,9 @@
 import math
 import ctypes
 import pyglet
+pyglet.options["shadow_window"] = False
+pyglet.options["debug_gl"] = False
+
 import pyglet.gl as gl
 #files
 import shader
@@ -9,8 +12,7 @@ import matrix
 import block_type
 import texture_manager
 
-pyglet.options["shadow_window"] = False
-pyglet.options["debug_gl"] = False
+
 
 class Window(pyglet.window.Window):
     def __init__(self, **args):
@@ -39,8 +41,8 @@ class Window(pyglet.window.Window):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vbo)
 
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
-                        ctypes.sizeof(gl.GLfloat * len(self.grass.vertex_position)),
-                        (gl.GLfloat * len(self.grass.vertex_position)) (*self.grass.vertex_position),
+                        ctypes.sizeof(gl.GLfloat * len(self.grass.vertex_positions)),
+                        (gl.GLfloat * len(self.grass.vertex_positions)) (*self.grass.vertex_positions),
                         gl.GL_STATIC_DRAW)
         
         gl.glVertexAttribPointer(0,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
