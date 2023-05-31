@@ -11,3 +11,7 @@ class Texture_manager:
         self.max_texture = max_texture
 
         self.textures =[]
+
+        self.texture_array = gl.GLuint(0)
+        gl.glGenTrxtures(1,self.texture_array)
+        gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY,self.texture_array)
