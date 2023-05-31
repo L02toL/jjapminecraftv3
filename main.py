@@ -27,7 +27,7 @@ class Window(pyglet.window.Window):
         self.stone = block_type.Block_type(self.texture_manager,"stone",{"all":"stone"})
         self.sand = block_type.Block_type(self.texture_manager,"sand",{"all":"sand"})
         self.planks = block_type.Block_type(self.texture_manager,"planks",{"all":"planks"})
-        self.log = block_type.Block_type(self.texture_manager,"log",{"top":"log_top","bottom":"log_top","side":"log_side"})
+        self.log = block_type.Block_type(self.texture_manager,"log",{"top":"log_top","bottom":"log_top","sides":"log_side"})
 
         self.texture_manager.generate_mipmaps()
         
@@ -36,9 +36,9 @@ class Window(pyglet.window.Window):
         gl.glGenVertexArrays(1,ctypes.byref(self.vao))
         gl.glBindVertexArray(self.vao)
         #vertex buffer
-        self.vbo = gl.GLuint(0)
-        gl.glGenBuffers(1,ctypes.byref(self.vbo))
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vbo)
+        self.vertex_position_vbo = gl.GLuint(0)
+        gl.glGenBuffers(1,ctypes.byref(self.vertex_position_vbo))
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.vertex_position_vbo)
 
         gl.glBufferData(gl.GL_ARRAY_BUFFER,
                         ctypes.sizeof(gl.GLfloat * len(self.grass.vertex_positions)),
@@ -47,6 +47,18 @@ class Window(pyglet.window.Window):
         
         gl.glVertexAttribPointer(0,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
         gl.glEnableVertexAttribArray(0)
+        #texcoordvbo
+        self.tex_coord_vbo = gl.GLuint(0)
+        gl.glGenBuffers(1,ctypes.byref(self.tex_coord_vbo))
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.tex_coord_vbo)
+
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                        ctypes.sizeof(gl.GLfloat * len(self.grass.tex_coords)),
+                        (gl.GLfloat * len(self.grass.tex_coords)) (*self.grass.tex_coords),
+                        gl.GL_STATIC_DRAW)
+        
+        gl.glVertexAttribPointer(1,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
+        gl.glEnableVertexAttribArray(1)
         #indexbufferobject
         self.ibo = gl.GLuint(0)
         gl.glGenBuffers(1,self.ibo)
