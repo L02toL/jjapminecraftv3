@@ -59,6 +59,18 @@ class Window(pyglet.window.Window):
         
         gl.glVertexAttribPointer(1,3,gl.GL_FLOAT,gl.GL_FALSE,0,0)
         gl.glEnableVertexAttribArray(1)
+        #shading value make
+        self.shading_values_vbo = gl.GLuint(0)
+        gl.glGenBuffers(1,ctypes.byref(self.shading_values_vbo))
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER,self.shading_values_vbo)
+
+        gl.glBufferData(gl.GL_ARRAY_BUFFER,
+                        ctypes.sizeof(gl.GLfloat * len(self.grass.shading_values)),
+                        (gl.GLfloat * len(self.grass.shading_values)) (*self.grass.shading_values),
+                        gl.GL_STATIC_DRAW)
+        
+        gl.glVertexAttribPointer(2,1,gl.GL_FLOAT,gl.GL_FALSE,0,0)
+        gl.glEnableVertexAttribArray(2)
         #indexbufferobject
         self.ibo = gl.GLuint(0)
         gl.glGenBuffers(1,self.ibo)
@@ -77,19 +89,21 @@ class Window(pyglet.window.Window):
         #gone to cam
         #pygletstuff
 
-        pyglet.clock.schedule_interval(self.update,1.0/60)
+        pyglet.clock.schedule_interval(self.update,1.0/10000)
         self.mouse_captured = False
         #camera
         self.camera = camera.Camera(self.shader,self.width,self.height)
         
     def update(self,delta_time):
+        print(f"FPS: {math.floor(1.0 / delta_time)}")
+
         if not self.mouse_captured:
             self.camera.input = [0,0,0]
         
         self.camera.update_camera(delta_time)
         
     def on_draw(self):
-        self.camera.update_matrices()
+
         #gone to cam
         #bind textures
         gl.glActiveTexture(gl.GL_TEXTURE0)
@@ -100,12 +114,19 @@ class Window(pyglet.window.Window):
         gl.glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
 
-        gl.glDrawElements(
-            gl.GL_TRIANGLES,
-            len(self.grass.indices),
-            gl.GL_UNSIGNED_INT,
-            None
-        )
+        for x in range(16):
+            for y in range(16):
+                for z in range(16):
+                    self.camera.update_matrices((x,y,z))
+
+                    gl.glDrawElements(
+                        gl.GL_TRIANGLES,
+                        len(self.grass.indices),
+                        gl.GL_UNSIGNED_INT,
+                        None
+                    )
+
+        
     
     def on_resize(self,width,height):
         print(f"resize {width} * {height}")
