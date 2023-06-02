@@ -32,14 +32,14 @@ class Camera:
         
         
         
-    def update_matrices(self):
+    def update_matrices(self,block_position):
         #create projection matrix
         self.p_matrix.load_identity()
         self.p_matrix.perspective(90,float(self.width)/self.height,0.1,500)
         #create modelview matrix
         self.mv_matrix.load_identity()
         self.mv_matrix.rotate_2d(-(self.rotation[0] - math.tau / 4),self.rotation[1])
-        self.mv_matrix.translate(-self.position[0],-self.position[1],self.position[2])
+        self.mv_matrix.translate(-self.position[0] + block_position[0],-self.position[1] + block_position[1],self.position[2] + block_position[2])
         #modelviewprojectionmatrix
         mvp_matrix = self.p_matrix * self.mv_matrix
         self.shader.uniform_matrix(self.shader_matrix_location,mvp_matrix)
