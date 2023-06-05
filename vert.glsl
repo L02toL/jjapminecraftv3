@@ -14,5 +14,5 @@ void main(void) {
     local_position = vertex_position;
     interpolated_tex_coords = tex_coords;
     interpolated_shading_value = shading_value;
-    gl_Position = matrix * vec4(vertex_position,1.0);
+    gl_Position = matrix * vec4(vertex_position, 1.0);
 }
