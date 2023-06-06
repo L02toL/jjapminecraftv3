@@ -1,5 +1,6 @@
 #dictionaries
 import math
+import random
 import ctypes
 import pyglet
 pyglet.options["shadow_window"] = False
@@ -77,7 +78,7 @@ class Window(pyglet.window.Window):
         def hit_callback(current_block,next_block):
             if button == pyglet.window.mouse.RIGHT: self.world.set_block(current_block,self.holding)
             elif button == pyglet.window.mouse.LEFT: self.world.set_block(next_block,0)
-            elif button == pyglet.window.mouse.MIDDLE: self.world.get_block_number(next_block)
+            elif button == pyglet.window.mouse.MIDDLE: self.holding = self.world.get_block_number(next_block)
 
         hit_ray = hit.Hit_ray(self.world,self.camera.rotation,self.camera.position)
         
@@ -108,6 +109,12 @@ class Window(pyglet.window.Window):
         
         elif key == pyglet.window.key.SPACE: self.camera.input[1] += 1
         elif key == pyglet.window.key.LSHIFT: self.camera.input[1] -= 1
+        elif key == pyglet.window.key.LCTRL : self.camera.target_speed = camera.SPRINTING_SPEED
+
+        elif key == pyglet.window.key.G:
+            self.holding = random.randint(1,len(self.world.block_types) - 1)
+        elif key == pyglet.window.key.O:
+            self.world.save.save()
         
         elif key == pyglet.window.key.ESCAPE:
             self.mouse_captured = False

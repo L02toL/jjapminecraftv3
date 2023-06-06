@@ -6,46 +6,73 @@ import chunks
 import block_type
 import texture_manager
 
-import models.plant
-import models.cactus
+import save
+import models
 
 class World:
     def __init__(self):
         self.texture_manager = texture_manager.Texture_manager(16,16,256)
         self.block_types = [None]
         
-        self.block_types.append(block_type.Block_type(self.texture_manager, "cobblestone", {"all": "cobblestone"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "grass", {"top": "grass", "bottom": "dirt", "sides": "grass_side"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "grass_block", {"all": "grass"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "dirt", {"all": "dirt"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "stone", {"all": "stone"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "sand", {"all": "sand"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "planks", {"all": "planks"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "log", {"top": "log_top", "bottom": "log_top", "sides": "log_side"}))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "daisy", {"all" : "daisy"}, models.plant))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "rose", {"all" : "rose"}, models.plant))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "cactus", {"top": "cactus_top", "bottom": "cactus_bottom", "sides": "cactus_side"}, models.cactus))
-        self.block_types.append(block_type.Block_type(self.texture_manager, "dead_bush", {"all" : "rose"}, models.plant))
-        
+                # parse block type data file    
+
+        blocks_data_file = open("data/blocks.mcpy")
+        blocks_data = blocks_data_file.readlines()
+        blocks_data_file.close()
+
+        for block in blocks_data:
+            if block[0] in ['\n', '#']: # skip if empty line or comment
+                continue
+            
+            number, props = block.split(':', 1)
+            number = int(number)
+
+            # default block
+
+            name = "Unknown"
+            model = models.cube
+            texture = {"all": "unknown"}
+
+            # read properties
+
+            for prop in props.split(','):
+                prop = prop.strip()
+                prop = list(filter(None, prop.split(' ', 1)))
+
+                if prop[0] == "sameas":
+                    sameas_number = int(prop[1])
+
+                    name = self.block_types[sameas_number].name
+                    texture = self.block_types[sameas_number].block_face_textures
+                    model = self.block_types[sameas_number].model
+                
+                elif prop[0] == "name":
+                    name = eval(prop[1])
+                
+                elif prop[0][:7] == "texture":
+                    _, side = prop[0].split('.')
+                    texture[side] = prop[1].strip()
+
+                elif prop[0] == "model":
+                    model = eval(prop[1])
+            
+            # add block type
+
+            _block_type = block_type.Block_type(self.texture_manager, name, texture, model)
+
+            if number < len(self.block_types):
+                self.block_types[number] = _block_type
+            
+            else:
+                self.block_types.append(_block_type)
+
         self.texture_manager.generate_mipmaps()
         
-        self.chunks = {}
-        self.chunks[(0,0,0)] = chunks.Chunk(self,(0,0,0))
+        #load world
+        self.save = save.Save(self)
         
-        for x in range(8):
-            for z in range(8):
-                chunk_position = (x - 4, -1, z - 4)
-                current_chunk = chunks.Chunk(self, chunk_position)
-				
-                for i in range(chunks.CHUNK_WIDTH):
-                    for j in range(chunks.CHUNK_HEIGHT):
-                        for k in range(chunks.CHUNK_LENGTH):
-                            if j == 15: current_chunk.blocks[i][j][k] = random.choices([0,9,10],[20,2,1])[0]
-                            elif j ==14 : current_chunk.blocks[i][j][k] = 2
-                            elif j > 12: current_chunk.blocks[i][j][k] = 4
-                            else: current_chunk.blocks[i][j][k] = 5
-				
-                self.chunks[chunk_position] = current_chunk
+        self.chunks = {}
+        self.save.load()
 
         for chunk_position in self.chunks:
             self.chunks[chunk_position].update_subchunk_meshes()
@@ -102,6 +129,8 @@ class World:
         lx,ly,lz = self.get_local_position(position)
         
         self.chunks[chunk_position].blocks[lx][ly][lz] = number
+        self.chunks[chunk_position].modified = True
+        
         self.chunks[chunk_position].update_at_position((x,y,z))
         self.chunks[chunk_position].update_mesh()
 
@@ -120,7 +149,7 @@ class World:
 
         if lz == chunks.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
         if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
-	
+    
         
     def draw(self):
         for chunk_position in self.chunks:

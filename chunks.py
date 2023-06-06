@@ -5,13 +5,13 @@ import pyglet.gl as gl
 import subchunk
 
 CHUNK_WIDTH = 16
-CHUNK_HEIGHT = 16
+CHUNK_HEIGHT = 128
 CHUNK_LENGTH =16
 
 class Chunk:
     def __init__(self, world, chunk_position):
         self.world = world
-        
+        self.modified = False
         self.chunk_position = chunk_position
 
         self.position = (
@@ -99,7 +99,6 @@ class Chunk:
         if lz == 0: try_update_subchunk_mesh((sx, sy, sz - 1))
 
     def update_mesh(self):
-        self.has_mesh = True
         
         self.mesh_vertex_positions = []
         self.mesh_tex_coords = []
@@ -168,8 +167,8 @@ class Chunk:
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER,self.ibo)
         gl.glBufferData(
             gl.GL_ELEMENT_ARRAY_BUFFER,
-            ctypes.sizeof(gl.GLuint * len(self.mesh_indices)),
-            (gl.GLuint * len(self.mesh_indices)) (*self.mesh_indices),
+            ctypes.sizeof(gl.GLuint * self.mesh_indices_length),
+            (gl.GLuint * self.mesh_indices_length) (*self.mesh_indices),
             gl.GL_STATIC_DRAW
         )
     def draw(self):

@@ -2,8 +2,8 @@ import math
 import matrix
 
 class Camera:
-    def __init__(self,shader,witdh,height):
-        self.width = witdh
+    def __init__(self,shader,width,height):
+        self.width = width
         self.height = height
         #matrices
         self.mv_matrix = matrix.Matrix()
@@ -15,7 +15,7 @@ class Camera:
         
         self.input = [0,0,0]
         
-        self.position = [0,0,0]
+        self.position = [0,80,0]
         self.rotation = [-math.tau / 4,0]
         
     def update_camera(self,delta_time):
