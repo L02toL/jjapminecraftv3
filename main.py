@@ -10,7 +10,7 @@ import pyglet.gl as gl
 #files
 import matrix
 import shader
-import camera
+import player
 
 import world
 
@@ -35,18 +35,18 @@ class Window(pyglet.window.Window):
         pyglet.clock.schedule_interval(self.update,1.0 / 10000)
         self.mouse_captured = False
         #camera
-        self.camera = camera.Camera(self.shader,self.width,self.height)
+        self.player = player.Player(self.world,self.shader,self.width,self.height)
         
         self.holding = 7
         
     def update(self,delta_time):
         if not self.mouse_captured:
-            self.camera.input = [0,0,0]
+            self.player.input = [0,0,0]
         
-        self.camera.update_camera(delta_time)
+        self.player.update(delta_time)
         
     def on_draw(self):
-        self.camera.update_matrices()
+        self.player.update_matrices()
         #gone to cam
         #bind textures
         gl.glActiveTexture(gl.GL_TEXTURE0)
@@ -66,8 +66,8 @@ class Window(pyglet.window.Window):
     def on_resize(self,width,height):
         print(f"resize {width} * {height}")
         gl.glViewport(0,0,width,height)
-        self.camera.width = width
-        self.camera.height = height
+        self.player.width = width
+        self.player.height = height
     
     def on_mouse_press(self, x, y, button, modifiers):
         if not self.mouse_captured:
@@ -79,8 +79,11 @@ class Window(pyglet.window.Window):
             if button == pyglet.window.mouse.RIGHT: self.world.set_block(current_block,self.holding)
             elif button == pyglet.window.mouse.LEFT: self.world.set_block(next_block,0)
             elif button == pyglet.window.mouse.MIDDLE: self.holding = self.world.get_block_number(next_block)
+        
+        x, y, z = self.player.position
+        y+= self.player.eyelevel
 
-        hit_ray = hit.Hit_ray(self.world,self.camera.rotation,self.camera.position)
+        hit_ray = hit.Hit_ray(self.world,self.player.rotation,(x,y,z))
         
         while hit_ray.distance < hit.HIT_RANGE:
             if hit_ray.step(hit_callback):
@@ -90,10 +93,10 @@ class Window(pyglet.window.Window):
         if self.mouse_captured:
             sensitivity = 0.004
             
-            self.camera.rotation[0] += delta_x * sensitivity
-            self.camera.rotation[1] += delta_y * sensitivity
+            self.player.rotation[0] += delta_x * sensitivity
+            self.player.rotation[1] += delta_y * sensitivity
             
-            self.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.camera.rotation[1]))
+            self.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.player.rotation[1]))
     
     def on_mouse_drag(self,x,y,delta_x,delta_y,buttons,modifiers):
         self.on_mouse_motion(x,y,delta_x,delta_y)
@@ -102,14 +105,14 @@ class Window(pyglet.window.Window):
         if not self.mouse_captured:
             return
         
-        if key == pyglet.window.key.W: self.camera.input[2] += 1
-        elif key == pyglet.window.key.S: self.camera.input[2] -= 1
-        elif key == pyglet.window.key.A: self.camera.input[0] -= 1
-        elif key == pyglet.window.key.D: self.camera.input[0] += 1
+        if key == pyglet.window.key.W: self.player.input[2] += 1
+        elif key == pyglet.window.key.S: self.player.input[2] -= 1
+        elif key == pyglet.window.key.A: self.player.input[0] -= 1
+        elif key == pyglet.window.key.D: self.player.input[0] += 1
         
-        elif key == pyglet.window.key.SPACE: self.camera.input[1] += 1
-        elif key == pyglet.window.key.LSHIFT: self.camera.input[1] -= 1
-        elif key == pyglet.window.key.LCTRL : self.camera.target_speed = camera.SPRINTING_SPEED
+        elif key == pyglet.window.key.SPACE: self.player.input[1] += 1
+        elif key == pyglet.window.key.LSHIFT: self.player.input[1] -= 1
+        elif key == pyglet.window.key.LCTRL : self.player.target_speed = player.SPRINTING_SPEED
 
         elif key == pyglet.window.key.G:
             self.holding = random.randint(1,len(self.world.block_types) - 1)
@@ -124,13 +127,14 @@ class Window(pyglet.window.Window):
         if not self.mouse_captured:
             return
         
-        if key == pyglet.window.key.W: self.camera.input[2] -= 1
-        elif key == pyglet.window.key.S: self.camera.input[2] += 1
-        elif key == pyglet.window.key.A: self.camera.input[0] += 1
-        elif key == pyglet.window.key.D: self.camera.input[0] -= 1
+        if key == pyglet.window.key.W: self.player.input[2] -= 1
+        elif key == pyglet.window.key.S: self.player.input[2] += 1
+        elif key == pyglet.window.key.A: self.player.input[0] += 1
+        elif key == pyglet.window.key.D: self.player.input[0] -= 1
         
-        elif key == pyglet.window.key.SPACE: self.camera.input[1] -= 1
-        elif key == pyglet.window.key.LSHIFT: self.camera.input[1] += 1
+        elif key == pyglet.window.key.SPACE: self.player.input[1] -= 1
+        elif key == pyglet.window.key.LSHIFT: self.player.input[1] += 1
+        elif key == pyglet.window.key.LCTRL : self.player.target_speed = player.WALKING_SPEED
     
 
 class Game:
