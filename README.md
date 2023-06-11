@@ -13,4 +13,4 @@
 앞으로도 인벤토리 및 서바이벌 모드도 연출할 예정입니다. (개발 기간 미지수) <br/>
 <br/>
 <br/>
-다운로드 링크 (exe) : 
+다운로드 링크 (exe) : https://drive.google.com/drive/folders/1_1S0_3BOT_PmMyYQQBRiV1PxwR1KkLKH?usp=sharing
